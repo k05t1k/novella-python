@@ -1,3 +1,6 @@
+import json
+import csv
+import os
 import random
 
 # Концовка
@@ -25,6 +28,8 @@ game = [
     "Убейте меня.",
     ":)"
 ]
+
+chapter = 1
 
 # Пользователь вводит имя
 def EditName():
@@ -58,6 +63,53 @@ def Choice(var):
             return var
         case _:
             BrokenEnding()
+
+# Сохранение
+def SaveGame(name):
+    global chapter 
+    data = { 'chapter':chapter } 
+    with open(f'{name}_game.json', 'w') as outfile: 
+        json.dump(data, outfile) 
+    print('Игра успешно сохранена.')
+
+# Загрузка
+def LoadGame(name):
+    global chapter 
+    if not os.path.exists(f'{name}_game.json'): 
+        print(f'Сохранения для пользователя {name} не найдены.')
+    else:
+        with open(f'{name}_game.json') as json_file: 
+            data = json.load(json_file) 
+        hp, coins, damage = data['hp'], data['coins'], data['damage'] 
+        print(f'Игра для пользователя {name} успешно загружена.')
+
+# Удаление созранения
+def DeleteSave(name):
+    if not os.path.exists(f'{name}_game.json'): 
+        print(f'Сохранения для пользователя {name} не найдены.')
+    else:
+        os.remove(f'{name}_game.json') 
+        print(f'Сохранение для пользователя {name} успешно удалено.')
+
+# Запись в CSV       
+def WriteToCSV(name):
+    global chapter 
+    output_data = [[name, chapter]]
+    with open('game_data.csv', 'a', newline ='') as file:
+        writer = csv.writer(file)
+        writer.writerows(output_data)
+    print('Данные прошедшей игровей сессии успешно записаны в CSV.')
+
+# Запрос на сохранение
+def Save():
+    answer = input("Хотите ли вы сохранится? y/n: ")
+    if answer == "y":
+        WriteToCSV(persons[0])
+        SaveGame(persons[0])
+        print("\n")
+    else: 
+        print("\n")
+        return
 
 # Первая часть
 def FirstPart():
@@ -108,6 +160,8 @@ def Test():
 def SecondPart(flag):
     print("[Вторая глава.]\n")
 
+    Save()    
+
     print("Вы проходите через узкие, но длинные коридоры")
     print("Вы проходите мимо 006 палаты, 007 палаты. Поднимаетесь на второй этаж и заходите в 042 кабинет")
     print("*Тук-тук*\nСтук раздался на весь длинный коридор.")
@@ -130,7 +184,7 @@ def SecondPart(flag):
     # Вызываем метод Test где будет содержаться сам тест (честно говоря, мне было лень придумывать что-то крутое, поэтому я сделал так)
     Test()
 
-    print("\nЧто же, вы готовы к последнему вопросу? (1 - Да, 2 - Нет)")
+    print("\nЧто же, вы готовы к послеaднему вопросу? (1 - Да, 2 - Нет)")
     answer = input(f"{ persons[0] }: ")
 
     # Решил добавить ещё один вопрос, чтобы можно было подкосячить и пройти на плохую концовку
@@ -152,6 +206,8 @@ def SecondPart(flag):
 def ThirdPart(flag):
     print("[Третья глава.]\n")
 
+    Save()    
+
     if flag:
         print("Прошло несколько месяцев...")
         print("Вы октазались от лечения, из-за чего часто впадали в депрессию")
@@ -171,6 +227,23 @@ def ThirdPart(flag):
 
     return
 
+# Запрос на загрузку сохранения
+def Load():
+    answer = input("Хотите ли вы загрузить последнее сохранение? y/n: ")
+    match answer:
+        case "y":
+            username = input("Введите имя пользователя: ")
+            LoadGame(username)
+        case _:
+            return True    
+
+# Запрос на удаление сохранения
+def Delete():
+    answer = input("Хотите ли вы удалить последнее сохранение? y/n: ")
+    if answer == "y":
+        username = input("Введите имя пользователя: ")
+        DeleteSave(username)
+
 # Обучение 
 def Introduction():
     print("[Обучение.] \n")
@@ -185,24 +258,24 @@ def Introduction():
 
 # Основной метод
 def Main():
+    global chapter 
+
     # Название игры
     print(f"[{ game[random.randint(0, 4)] }]\n")
 
     # Флаг для концовки
     flag = True
 
-    # Небольшое руководство по игре
-    answer = input("Хотели бы вы пройти обучение? y/n: ")
+    if Load() == True:
+        # Небольшое руководство по игре
+        answer = input("Хотели бы вы пройти обучение? y/n: ")
 
-    # Можно ввести что угодно кроме "Y" и у нас просто завершится опрос
-    match answer:
-        case "y":
-            Introduction()
-        case "Y":
-            Introduction()
-
-    # Выбор части, с которой мы хотим пройти
-    chapter = int(input("\nС какой части вы хотели бы начать? (1, 2, 3): "))
+        # Можно ввести что угодно кроме "Y" и у нас просто завершится опрос
+        match answer:
+            case "y":
+                Introduction()
+            case "Y":
+                Introduction()
 
     # Даём пользвателю ввести имя
     EditName()
