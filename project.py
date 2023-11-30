@@ -80,7 +80,7 @@ def LoadGame(name):
     else:
         with open(f'{name}_game.json') as json_file: 
             data = json.load(json_file) 
-        hp, coins, damage = data['hp'], data['coins'], data['damage'] 
+        chapter = data['chapter'] 
         print(f'Игра для пользователя {name} успешно загружена.')
 
 # Удаление созранения
@@ -234,6 +234,7 @@ def Load():
         case "y":
             username = input("Введите имя пользователя: ")
             LoadGame(username)
+            return False
         case _:
             return True    
 
@@ -276,9 +277,10 @@ def Main():
                 Introduction()
             case "Y":
                 Introduction()
+        
+        # Даём пользвателю ввести имя
+        EditName()
 
-    # Даём пользвателю ввести имя
-    EditName()
     while True:
         match chapter:
             case 1:
